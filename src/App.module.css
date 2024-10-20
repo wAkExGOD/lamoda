@@ -1,0 +1,28 @@
+.wrapper {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "filters search"
+    "filters items";
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filters"
+      "items";
+  }
+}
+
+.filters {
+  grid-area: filters;
+}
+
+.search {
+  grid-area: search;
+}
+
+.items {
+  grid-area: items;
+}
