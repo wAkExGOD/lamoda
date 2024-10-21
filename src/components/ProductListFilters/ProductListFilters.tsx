@@ -37,7 +37,7 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   props
 ) => {
   const { searchClassName, filtersClassName } = props
-  const { updateFilters, filters } = useProducts()
+  const { updateFilters, filteredProducts, filters } = useProducts()
 
   const [searchValue, setSearchValue] = useState(filters.searchValue)
   const [colors, setColors] = useState(filters.colors)
@@ -156,6 +156,9 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
             />
           </div>
         </div>
+        <p className="text-secondary">
+          {filteredProducts.length} products found
+        </p>
       </div>
     </>
   )
