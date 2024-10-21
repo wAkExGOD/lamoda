@@ -1,14 +1,10 @@
-import { Product } from "@/types"
+import { useProducts } from "@/contexts"
 import { ProductItem } from "../ProductItem/ProductItem"
 
-type ProductListProps = {
-  products: Product[]
-}
+export const ProductList = () => {
+  const { filteredProducts } = useProducts()
 
-export const ProductList: React.FC<ProductListProps> = (props) => {
-  const { products } = props
-
-  if (!products.length) {
+  if (!filteredProducts.length) {
     return (
       <p className="text-center text-secondary">
         No products found matching these filters
@@ -18,7 +14,7 @@ export const ProductList: React.FC<ProductListProps> = (props) => {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {products.map((product) => (
+      {filteredProducts.map((product) => (
         <ProductItem key={product.id} data={product} />
       ))}
     </div>

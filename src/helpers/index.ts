@@ -1,6 +1,6 @@
 export * from "./hooks"
 export * from "./generateProducts"
-export * from "./getFilteredProducts"
+export * from "./getInitialColorsObject"
 export * from "./getUniqueProductId"
 export * from "./isSubstring"
 export * from "./timeAgo"
