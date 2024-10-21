@@ -1,6 +1,6 @@
 # Lamoda
 
-![image](https://github.com/user-attachments/assets/74ff4e13-64ea-4d30-bd0c-88d10bd79b2c)
+![image](https://github.com/user-attachments/assets/a3e26691-e974-4575-91b5-cccf43ebc9cb)
 
 ## Установка и запуск
 
