@@ -6,7 +6,7 @@ export const ProductList = () => {
 
   if (!filteredProducts.length) {
     return (
-      <p className="text-center text-secondary">
+      <p className="text-center text-red-400">
         No products found matching these filters
       </p>
     )

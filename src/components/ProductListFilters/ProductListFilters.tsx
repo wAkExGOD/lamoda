@@ -2,14 +2,36 @@ import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button, Checkbox, Input, Label } from "../ui"
 import { useDebounce } from "@/helpers"
-import { COLORS, SORTING_LABELS } from "@/constants"
-import { Color, ProductFilters, Sorting } from "@/types"
+import { COLORS, SORTINGS } from "@/constants"
+import { Color, Sorting } from "@/types"
 import { useProducts } from "@/contexts"
+import { DoubleArrowDownIcon, DoubleArrowUpIcon } from "@radix-ui/react-icons"
 
 type ProductListFiltersProps = {
   searchClassName: string
   filtersClassName: string
 }
+
+const SORTING_LABELS = {
+  [SORTINGS.firstPopular]: (
+    <>
+      <DoubleArrowDownIcon />
+      Popularity
+    </>
+  ),
+  [SORTINGS.firstExpensive]: (
+    <>
+      <DoubleArrowDownIcon />
+      Price
+    </>
+  ),
+  [SORTINGS.firstCheap]: (
+    <>
+      <DoubleArrowUpIcon />
+      Price
+    </>
+  ),
+} as const
 
 export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   props
@@ -28,6 +50,21 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   const debouncedMinPrice = useDebounce(minPrice)
   const debouncedMaxPrice = useDebounce(maxPrice)
 
+  const handleChangePrice = (type: "min" | "max") => {
+    return (e: React.FormEvent<HTMLInputElement>) => {
+      const number = +e.currentTarget.value
+
+      if (!Number.isFinite(number)) {
+        return
+      }
+
+      if (type === "min") {
+        setMinPrice(number)
+      } else {
+        setMaxPrice(number)
+      }
+    }
+  }
   const handleChangeColor = (color: Color) => {
     setColors((prevColors) => ({ ...prevColors, [color]: !prevColors[color] }))
   }
@@ -51,7 +88,7 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
 
   return (
     <>
-      <div className={cn(searchClassName, "flex flex-col gap-4")}>
+      <div className={cn(searchClassName, "flex flex-col gap-4 xl:flex-row")}>
         <Input
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
@@ -63,6 +100,7 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
               key={labelKey}
               onClick={() => setSorting(labelKey as Sorting)}
               variant={sorting === labelKey ? "default" : "outline"}
+              className="flex gap-2 pl-3.5"
             >
               {SORTING_LABELS[labelKey as Sorting]}
             </Button>
@@ -84,12 +122,13 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
                   checked={colors[color as Color]}
                   className="w-6 h-6"
                 />
-                <label
-                  htmlFor="terms"
-                  className="text-sm font-medium capitalize leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
+                <label className="text-sm font-medium capitalize leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                   {color}
                 </label>
+                <i
+                  className="w-3 h-3 ml-auto rounded-sm opacity-40"
+                  style={{ backgroundColor: color }}
+                />
               </div>
             ))}
           </div>
@@ -97,15 +136,23 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
         <div className="grid w-full items-center gap-3 p-3 rounded-md border">
           <Label>Price</Label>
           <div className="flex flex-col gap-2">
+            <Label className="text-xs opacity-75" htmlFor="minPrice">
+              From
+            </Label>
             <Input
               value={minPrice}
+              id="minPrice"
               placeholder="From"
-              onChange={(e) => setMinPrice(+e.target.value)}
+              onChange={handleChangePrice("min")}
             />
+            <Label className="text-xs opacity-75" htmlFor="maxPrice">
+              To
+            </Label>
             <Input
               value={maxPrice}
+              id="maxPrice"
               placeholder="To"
-              onChange={(e) => setMaxPrice(+e.target.value)}
+              onChange={handleChangePrice("max")}
             />
           </div>
         </div>

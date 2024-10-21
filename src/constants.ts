@@ -9,12 +9,6 @@ export const SORTINGS = {
   firstCheap: "firstCheap",
 } as const
 
-export const SORTING_LABELS = {
-  [SORTINGS.firstPopular]: "First popular",
-  [SORTINGS.firstExpensive]: "First expensive",
-  [SORTINGS.firstCheap]: "First cheap",
-} as const
-
 export const COLORS = [
   "red",
   "green",

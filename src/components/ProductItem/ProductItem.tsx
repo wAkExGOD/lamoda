@@ -1,4 +1,5 @@
 import { Product } from "@/types"
+import { memo } from "react"
 
 type ProductItemProps = {
   data: Product
@@ -12,9 +13,9 @@ const PROPERTY_LABELS = {
 
 type Property = keyof typeof PROPERTY_LABELS
 
-export const ProductItem: React.FC<ProductItemProps> = (props) => {
-  const { name, description, color, price, rating, imageUrl } = props.data
-
+export const ProductItem = memo(function ProductItem({
+  data: { name, description, color, price, rating, imageUrl },
+}: ProductItemProps) {
   const properties: Record<Property, string | number> = {
     price,
     color,
@@ -43,4 +44,4 @@ export const ProductItem: React.FC<ProductItemProps> = (props) => {
       </div>
     </div>
   )
-}
+})
