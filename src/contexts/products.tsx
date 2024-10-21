@@ -57,6 +57,7 @@ const ProductsProvider = ({ children }: PropsWithChildren) => {
     let filteredProducts = [...initialProducts]
 
     if (searchValue) {
+      console.log({ searchValue })
       filteredProducts = filteredProducts.filter((product) => {
         const { name, description } = product
 
