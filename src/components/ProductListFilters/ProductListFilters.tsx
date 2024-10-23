@@ -64,6 +64,7 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
       }
     }
   }
+  
   const handleChangeColor = (color: Color) => {
     setColors((prevColors) => ({ ...prevColors, [color]: !prevColors[color] }))
   }

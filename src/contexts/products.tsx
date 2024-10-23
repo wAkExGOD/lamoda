@@ -53,12 +53,9 @@ const ProductsProvider = ({ children }: PropsWithChildren) => {
         )
       })
       .filter((product) => colors[product.color] === true)
-      .filter((product) => {
-        const isValidAtMinimum = minPrice ? product.price >= minPrice : true
-        const isValidAtMaximum = maxPrice ? product.price <= maxPrice : true
-
-        return isValidAtMinimum && isValidAtMaximum
-      })
+      .filter(
+        (product) => product.price >= minPrice && product.price <= maxPrice
+      )
       .sort((a, b) => {
         switch (sorting) {
           case SORTINGS.firstCheap:
