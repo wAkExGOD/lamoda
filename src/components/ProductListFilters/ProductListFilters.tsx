@@ -46,7 +46,6 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   const [sorting, setSorting] = useState(filters.sorting)
 
   const debouncedSearch = useDebounce(searchValue)
-  const debouncedSorting = useDebounce(sorting)
   const debouncedMinPrice = useDebounce(minPrice)
   const debouncedMaxPrice = useDebounce(maxPrice)
 
@@ -72,17 +71,17 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   useEffect(() => {
     updateFilters({
       searchValue: debouncedSearch,
-      sorting: debouncedSorting,
       minPrice: debouncedMinPrice,
       maxPrice: debouncedMaxPrice,
+      sorting,
       colors,
     })
   }, [
     updateFilters,
     debouncedSearch,
-    debouncedSorting,
     debouncedMinPrice,
     debouncedMaxPrice,
+    sorting,
     colors,
   ])
 
