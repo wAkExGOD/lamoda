@@ -6,7 +6,7 @@ export type Product = {
   id: string
   name: string
   description: string
-  color: string
+  color: Color
   category: string
   price: number
   rating: number

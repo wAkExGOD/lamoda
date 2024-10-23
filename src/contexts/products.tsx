@@ -4,12 +4,12 @@ import {
   getInitialColorsObject,
   isSubstring,
 } from "@/helpers"
-import { Color, ColorsObject, Product, ProductFilters } from "@/types"
+import { Product, ProductFilters } from "@/types"
 import {
   PropsWithChildren,
   createContext,
   useContext,
-  useEffect,
+  useMemo,
   useState,
 } from "react"
 
@@ -30,35 +30,21 @@ const ProductsContext = createContext<ProductsContextType | null>(null)
 const initialProducts = generateProducts(50)
 
 const ProductsProvider = ({ children }: PropsWithChildren) => {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [filters, setFilters] = useState<ProductFilters>({
+    searchValue: "",
+    colors: getInitialColorsObject(),
+    minPrice: MIN_PRODUCT_PRICE,
+    maxPrice: MAX_PRODUCT_PRICE,
+    sorting: SORTINGS.firstPopular,
+  })
 
-  const [searchValue, setSearchValue] =
-    useState<ProductFilters["searchValue"]>("")
-  const [colors, setColors] = useState<Required<ProductFilters>["colors"]>(
-    getInitialColorsObject()
-  )
-  const [minPrice, setMinPrice] =
-    useState<ProductFilters["minPrice"]>(MIN_PRODUCT_PRICE)
-  const [maxPrice, setMaxPrice] =
-    useState<ProductFilters["maxPrice"]>(MAX_PRODUCT_PRICE)
-  const [sorting, setSorting] = useState<ProductFilters["sorting"]>(
-    SORTINGS.firstPopular
-  )
+  const updateFilters = (filters: ProductFilters) => setFilters(filters)
 
-  const updateFilters = (filters: ProductFilters) => {
-    setSearchValue(filters.searchValue)
-    setColors(filters.colors as ColorsObject)
-    setMinPrice(filters.minPrice)
-    setMaxPrice(filters.maxPrice)
-    setSorting(filters.sorting)
-  }
+  const filteredProducts = useMemo(() => {
+    const { searchValue, colors, minPrice, maxPrice, sorting } = filters
 
-  useEffect(() => {
-    let filteredProducts = [...initialProducts]
-
-    if (searchValue) {
-      console.log({ searchValue })
-      filteredProducts = filteredProducts.filter((product) => {
+    return [...initialProducts]
+      .filter((product) => {
         const { name, description } = product
 
         return (
@@ -66,58 +52,31 @@ const ProductsProvider = ({ children }: PropsWithChildren) => {
           isSubstring(description, searchValue)
         )
       })
-    }
-
-    if (colors) {
-      if (
-        Object.keys(colors).some((color) => colors[color as Color] === true)
-      ) {
-        filteredProducts = filteredProducts.filter(
-          (product) => colors[product.color as Color] === true
-        )
-      }
-    }
-
-    if (minPrice || maxPrice) {
-      filteredProducts = filteredProducts.filter((product) => {
+      .filter((product) => colors[product.color] === true)
+      .filter((product) => {
         const isValidAtMinimum = minPrice ? product.price >= minPrice : true
         const isValidAtMaximum = maxPrice ? product.price <= maxPrice : true
 
         return isValidAtMinimum && isValidAtMaximum
       })
-    }
-
-    if (sorting) {
-      let sortFunction: (a: Product, b: Product) => number
-
-      switch (sorting) {
-        case SORTINGS.firstCheap:
-          sortFunction = (a, b) => a.price - b.price
-          break
-        case SORTINGS.firstExpensive:
-          sortFunction = (a, b) => b.price - a.price
-          break
-        case SORTINGS.firstPopular:
-          sortFunction = (a, b) => b.rating - a.rating
-          break
-      }
-
-      filteredProducts.sort((a, b) => sortFunction(a, b))
-    }
-
-    setFilteredProducts(filteredProducts)
-  }, [searchValue, colors, minPrice, maxPrice, sorting])
+      .sort((a, b) => {
+        switch (sorting) {
+          case SORTINGS.firstCheap:
+            return a.price - b.price
+          case SORTINGS.firstExpensive:
+            return b.price - a.price
+          case SORTINGS.firstPopular:
+            return b.rating - a.rating
+          default:
+            return 0
+        }
+      })
+  }, [filters])
 
   return (
     <ProductsContext.Provider
       value={{
-        filters: {
-          searchValue,
-          colors,
-          minPrice,
-          maxPrice,
-          sorting,
-        },
+        filters,
         filteredProducts,
         updateFilters,
       }}

@@ -25,4 +25,5 @@
 
 .items {
   grid-area: items;
+  grid-row-end: none;
 }
