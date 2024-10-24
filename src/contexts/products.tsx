@@ -21,8 +21,8 @@ export type Notification = {
 
 export type ProductsContextType = {
   filteredProducts: Product[]
-  filters: ProductFilters
-  updateFilters: (filters: ProductFilters) => void
+  filterValues: ProductFilters
+  setFilterValues: (filters: ProductFilters) => void
 }
 
 const ProductsContext = createContext<ProductsContextType | null>(null)
@@ -30,7 +30,7 @@ const ProductsContext = createContext<ProductsContextType | null>(null)
 const initialProducts = generateProducts(50)
 
 const ProductsProvider = ({ children }: PropsWithChildren) => {
-  const [filters, setFilters] = useState<ProductFilters>({
+  const [filterValues, setFilterValues] = useState<ProductFilters>({
     searchValue: "",
     colors: getInitialColorsObject(),
     minPrice: MIN_PRODUCT_PRICE,
@@ -38,13 +38,11 @@ const ProductsProvider = ({ children }: PropsWithChildren) => {
     sorting: SORTINGS.firstPopular,
   })
 
-  const updateFilters = (filters: ProductFilters) => setFilters(filters)
+  const filters: ((products: Product[]) => Product[])[] = [
+    (products) => {
+      const { searchValue } = filterValues
 
-  const filteredProducts = useMemo(() => {
-    const { searchValue, colors, minPrice, maxPrice, sorting } = filters
-
-    return [...initialProducts]
-      .filter((product) => {
+      return products.filter((product) => {
         const { name, description } = product
 
         return (
@@ -52,30 +50,56 @@ const ProductsProvider = ({ children }: PropsWithChildren) => {
           isSubstring(description, searchValue)
         )
       })
-      .filter((product) => colors[product.color] === true)
-      .filter(
+    },
+    (products) => {
+      const { colors } = filterValues
+
+      return products.filter((product) => colors[product.color] === true)
+    },
+    (products) => {
+      const { minPrice, maxPrice } = filterValues
+
+      return products.filter(
         (product) => product.price >= minPrice && product.price <= maxPrice
       )
-      .sort((a, b) => {
-        switch (sorting) {
-          case SORTINGS.firstCheap:
-            return a.price - b.price
-          case SORTINGS.firstExpensive:
-            return b.price - a.price
-          case SORTINGS.firstPopular:
-            return b.rating - a.rating
-          default:
-            return 0
-        }
-      })
-  }, [filters])
+    },
+    (products) => {
+      const { sorting } = filterValues
+
+      let sortFn: (a: Product, b: Product) => number
+
+      switch (sorting) {
+        case SORTINGS.firstCheap:
+          sortFn = (a, b) => a.price - b.price
+          break
+        case SORTINGS.firstExpensive:
+          sortFn = (a, b) => b.price - a.price
+          break
+        default:
+          sortFn = (a, b) => b.rating - a.rating
+          break
+      }
+
+      products.sort(sortFn)
+
+      return products
+    },
+  ] as const
+
+  const filteredProducts = useMemo(() => {
+    return filters.reduce(
+      (products, filter) => filter(products),
+      [...initialProducts]
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValues])
 
   return (
     <ProductsContext.Provider
       value={{
-        filters,
+        filterValues,
         filteredProducts,
-        updateFilters,
+        setFilterValues,
       }}
     >
       {children}
