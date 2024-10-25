@@ -22,7 +22,7 @@ export type Notification = {
 export type ProductsContextType = {
   filteredProducts: Product[]
   filterValues: ProductFilters
-  setFilterValues: (filters: ProductFilters) => void
+  setFilterValues: React.Dispatch<React.SetStateAction<ProductFilters>>
 }
 
 const ProductsContext = createContext<ProductsContextType | null>(null)

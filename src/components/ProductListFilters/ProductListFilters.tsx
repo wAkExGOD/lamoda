@@ -1,37 +1,20 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button, Checkbox, Input, Label } from "../ui"
 import { useDebounce } from "@/helpers"
 import { COLORS, SORTINGS } from "@/constants"
-import { Color, Sorting } from "@/types"
+import { Color, ProductFilters, Sorting } from "@/types"
 import { useProducts } from "@/contexts"
 import { DoubleArrowDownIcon, DoubleArrowUpIcon } from "@radix-ui/react-icons"
+import { SortFilter } from "./SortFilter/SortFilter"
+import { SearchInput } from "./SearchInput/SearchInput"
+import { ColorsFilter } from "./ColorsFilter/ColorsFilter"
+import { PriceFilter } from "./PriceFilter/PriceFilter"
 
 type ProductListFiltersProps = {
   searchClassName: string
   filtersClassName: string
 }
-
-const SORTING_LABELS = {
-  [SORTINGS.firstPopular]: (
-    <>
-      <DoubleArrowDownIcon />
-      Popularity
-    </>
-  ),
-  [SORTINGS.firstExpensive]: (
-    <>
-      <DoubleArrowDownIcon />
-      Price
-    </>
-  ),
-  [SORTINGS.firstCheap]: (
-    <>
-      <DoubleArrowUpIcon />
-      Price
-    </>
-  ),
-} as const
 
 export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   props
@@ -49,25 +32,33 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   const debouncedMinPrice = useDebounce(minPrice)
   const debouncedMaxPrice = useDebounce(maxPrice)
 
-  const handleChangePrice = (type: "min" | "max") => {
-    return (e: React.FormEvent<HTMLInputElement>) => {
-      const number = +e.currentTarget.value
+  const handleChangeMinPrice = useCallback(
+    (price: ProductFilters["minPrice"]) => {
+      setMinPrice(price)
+    },
+    []
+  )
 
-      if (!Number.isFinite(number)) {
-        return
-      }
+  const handleChangeMaxPrice = useCallback(
+    (price: ProductFilters["maxPrice"]) => {
+      setMaxPrice(price)
+    },
+    []
+  )
 
-      if (type === "min") {
-        setMinPrice(number)
-      } else {
-        setMaxPrice(number)
-      }
-    }
-  }
-
-  const handleChangeColor = (color: Color) => {
+  const handleChangeColor = useCallback((color: Color) => {
     setColors((prevColors) => ({ ...prevColors, [color]: !prevColors[color] }))
-  }
+  }, [])
+
+  const handleChangeSearchValue = useCallback(
+    (searchValue: ProductFilters["searchValue"]) => setSearchValue(searchValue),
+    []
+  )
+
+  const handleChangeSorting = useCallback(
+    (label: Sorting) => setSorting(label),
+    []
+  )
 
   useEffect(() => {
     setFilterValues({
@@ -89,73 +80,20 @@ export const ProductListFilters: React.FC<ProductListFiltersProps> = (
   return (
     <>
       <div className={cn(searchClassName, "flex flex-col gap-4 xl:flex-row")}>
-        <Input
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="Search product"
+        <SearchInput
+          onChange={handleChangeSearchValue}
+          searchValue={searchValue}
         />
-        <div className="flex gap-2">
-          {Object.keys(SORTING_LABELS).map((labelKey) => (
-            <Button
-              key={labelKey}
-              onClick={() => setSorting(labelKey as Sorting)}
-              variant={sorting === labelKey ? "default" : "outline"}
-              className="flex gap-2 pl-3.5"
-            >
-              {SORTING_LABELS[labelKey as Sorting]}
-            </Button>
-          ))}
-        </div>
+        <SortFilter onChange={handleChangeSorting} sorting={sorting} />
       </div>
       <div className={cn(filtersClassName, "flex flex-col gap-4")}>
-        <div className="grid w-full items-center gap-3 p-3 rounded-md border">
-          <Label>Color</Label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2 xl:grid-cols-1">
-            {COLORS.map((color) => (
-              <div
-                key={color}
-                className="flex items-center space-x-2"
-                onClick={() => handleChangeColor(color as Color)}
-              >
-                <Checkbox
-                  id={color}
-                  checked={colors[color as Color]}
-                  className="w-6 h-6"
-                />
-                <label className="text-sm font-medium capitalize leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                  {color}
-                </label>
-                <i
-                  className="w-3 h-3 ml-auto rounded-sm opacity-40"
-                  style={{ backgroundColor: color }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="grid w-full items-center gap-3 p-3 rounded-md border">
-          <Label>Price</Label>
-          <div className="flex flex-col gap-2">
-            <Label className="text-xs opacity-75" htmlFor="minPrice">
-              From
-            </Label>
-            <Input
-              value={minPrice}
-              id="minPrice"
-              placeholder="From"
-              onChange={handleChangePrice("min")}
-            />
-            <Label className="text-xs opacity-75" htmlFor="maxPrice">
-              To
-            </Label>
-            <Input
-              value={maxPrice}
-              id="maxPrice"
-              placeholder="To"
-              onChange={handleChangePrice("max")}
-            />
-          </div>
-        </div>
+        <ColorsFilter onChange={handleChangeColor} colors={colors} />
+        <PriceFilter
+          onMinPriceChange={handleChangeMinPrice}
+          onMaxPriceChange={handleChangeMaxPrice}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+        />
         <p className="text-secondary">
           {filteredProducts.length} products found
         </p>
